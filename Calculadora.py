@@ -43,12 +43,13 @@ class Calculadora:
         self.last_result = False
         self.operators = {'+', '-', '*', '/', '%', '**'}
 
-        # Estilos
-        self.bg = "#f3f3f3"
-        # Color para botones de operador: azul claro
-        self.op_color = "#5bc0de"  # azul claro
-        self.func_color = "#d9d9d9"
-        self.digit_color = "#ffffff"
+        # Estilos - Tema Oscuro
+        self.bg = "#1e1e1e"  # fondo oscuro
+        # Color para botones de operador: azul oscuro
+        self.op_color = "#0d6efd"  # azul oscuro
+        self.func_color = "#3a3a3a"  # gris medio oscuro
+        self.digit_color = "#2d2d2d"  # gris oscuro
+        self.text_color = "#e0e0e0"  # texto claro
         root.configure(bg=self.bg)
 
         # Fuente
@@ -61,7 +62,8 @@ class Calculadora:
         self.input_text.set('0')
         # Mostrar la expresión / resultado. Añadimos borde para crear un recuadro.
         self.display = Entry(root, font=self.font_display, textvariable=self.input_text,
-                     bd=2, bg='#ffffff', justify='right', relief=RIDGE)
+                     bd=2, bg='#0a0a0a', fg='#ffffff', justify='right', relief=RIDGE,
+                     insertbackground='#ffffff', disabledbackground='#0a0a0a', disabledforeground='#ffffff')
         self.display.grid(row=0, column=0, columnspan=6, sticky='nsew', padx=8, pady=(8,4))
 
         # Botones: fila por fila (label, command, color)
@@ -78,8 +80,8 @@ class Calculadora:
         for r, row in enumerate(rows, start=1):
             for c, (text, cmd, color) in enumerate(row):
                 # Todos los botones tendrán un recuadro (borde) consistente
-                b = Button(root, text=text, command=cmd, bg=color, fg='black', bd=2,
-                           font=self.font_button, relief=RIDGE)
+                b = Button(root, text=text, command=cmd, bg=color, fg=self.text_color, bd=2,
+                           font=self.font_button, relief=RIDGE, activebackground=color, activeforeground='#ffffff')
                 b.grid(row=r, column=c, sticky='nsew', padx=4, pady=4)
 
         # Configurar pesos para que los botones mantengan forma
