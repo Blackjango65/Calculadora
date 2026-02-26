@@ -1,0 +1,9 @@
+@startuml 
+package Calculadora { 
+[Calculadora.py] 
+package docs { 
+package v1 { 
+} 
+} 
+} 
+@enduml 

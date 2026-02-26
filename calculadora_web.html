@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Científica</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .calculator {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 8px;
+            width: 420px;
+        }
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: right;
+            background: #0a0a0a;
+            color: #ffffff;
+            border: 2px solid #333;
+            border-radius: 4px;
+            padding: 0 12px;
+            margin-bottom: 4px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+        }
+        button {
+            height: 50px;
+            font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+            border: 2px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #e0e0e0;
+        }
+        button:active { opacity: 0.8; }
+        .func  { background: #3a3a3a; }
+        .digit { background: #2d2d2d; }
+        .op    { background: #0d6efd; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" value="0" readonly>
+        <div class="buttons">
+            <!-- Fila 1: Memoria y control -->
+            <button class="func" data-testid="btn-mc"        onclick="calculator.memClear()">MC</button>
+            <button class="func" data-testid="btn-mr"        onclick="calculator.memRecall()">MR</button>
+            <button class="func" data-testid="btn-mplus"     onclick="calculator.memAdd()">M+</button>
+            <button class="func" data-testid="btn-mminus"    onclick="calculator.memSub()">M−</button>
+            <button class="func" data-testid="btn-backspace"  onclick="calculator.backspace()">←</button>
+            <button class="func" data-testid="btn-clear"      onclick="calculator.clearAll()">C</button>
+
+            <!-- Fila 2: Funciones científicas -->
+            <button class="func" data-testid="btn-sin"  onclick="calculator.add('sin(')">sin</button>
+            <button class="func" data-testid="btn-cos"  onclick="calculator.add('cos(')">cos</button>
+            <button class="func" data-testid="btn-tan"  onclick="calculator.add('tan(')">tan</button>
+            <button class="func" data-testid="btn-ln"   onclick="calculator.add('log(')">ln</button>
+            <button class="func" data-testid="btn-log"  onclick="calculator.add('log10(')">log</button>
+            <button class="func" data-testid="btn-sqrt" onclick="calculator.add('sqrt(')">√</button>
+
+            <!-- Fila 3 -->
+            <button class="digit" data-testid="btn-7"      onclick="calculator.add('7')">7</button>
+            <button class="digit" data-testid="btn-8"      onclick="calculator.add('8')">8</button>
+            <button class="digit" data-testid="btn-9"      onclick="calculator.add('9')">9</button>
+            <button class="op"    data-testid="btn-div"    onclick="calculator.add('/')">÷</button>
+            <button class="func"  data-testid="btn-mod"    onclick="calculator.add('%')">%</button>
+            <button class="func"  data-testid="btn-lparen" onclick="calculator.add('(')">(</button>
+
+            <!-- Fila 4 -->
+            <button class="digit" data-testid="btn-4"      onclick="calculator.add('4')">4</button>
+            <button class="digit" data-testid="btn-5"      onclick="calculator.add('5')">5</button>
+            <button class="digit" data-testid="btn-6"      onclick="calculator.add('6')">6</button>
+            <button class="op"    data-testid="btn-mul"    onclick="calculator.add('*')">×</button>
+            <button class="func"  data-testid="btn-pow"    onclick="calculator.add('**')">x^y</button>
+            <button class="func"  data-testid="btn-rparen" onclick="calculator.add(')')">)</button>
+
+            <!-- Fila 5 -->
+            <button class="digit" data-testid="btn-1"     onclick="calculator.add('1')">1</button>
+            <button class="digit" data-testid="btn-2"     onclick="calculator.add('2')">2</button>
+            <button class="digit" data-testid="btn-3"     onclick="calculator.add('3')">3</button>
+            <button class="op"    data-testid="btn-sub"   onclick="calculator.add('-')">−</button>
+            <button class="func"  data-testid="btn-fact"  onclick="calculator.add('factorial(')">n!</button>
+            <button class="func"  data-testid="btn-recip" onclick="calculator.reciprocal()">1/x</button>
+
+            <!-- Fila 6 -->
+            <button class="func"  data-testid="btn-sign" onclick="calculator.toggleSign()">±</button>
+            <button class="digit" data-testid="btn-0"    onclick="calculator.add('0')">0</button>
+            <button class="digit" data-testid="btn-dot"  onclick="calculator.add('.')">.</button>
+            <button class="op"    data-testid="btn-add"  onclick="calculator.add('+')">+</button>
+            <button class="func"  data-testid="btn-pi"   onclick="calculator.add('pi')">π</button>
+            <button class="op"    data-testid="btn-eq"   onclick="calculator.calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        /* ── Funciones matemáticas en ámbito global para eval() ── */
+        const sin    = Math.sin;
+        const cos    = Math.cos;
+        const tan    = Math.tan;
+        const log    = Math.log;      // logaritmo natural (ln)
+        const log10  = Math.log10;    // logaritmo base 10
+        const sqrt   = Math.sqrt;
+        const pi     = Math.PI;
+        const e      = Math.E;
+
+        function factorial(n) {
+            n = Math.round(n);
+            if (n < 0) throw new Error('Factorial negativo');
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) result *= i;
+            return result;
+        }
+
+        /* ── Clase Calculadora (réplica fiel de Calculadora.py) ── */
+        class Calculator {
+            constructor() {
+                this.display    = document.getElementById('display');
+                this.expr       = '';
+                this.memory     = 0.0;
+                this.lastResult = false;
+                this.operators  = new Set(['+', '-', '*', '/', '%', '**']);
+            }
+
+            add(s) {
+                if (this.lastResult) {
+                    const disp = this.display.value;
+                    if (this.operators.has(s) && disp !== 'ERROR' && disp !== '') {
+                        this.expr = disp + s;
+                    } else {
+                        this.expr = s;
+                    }
+                    this.lastResult = false;
+                } else {
+                    this.expr += s;
+                }
+                this.display.value = this.expr;
+            }
+
+            clearAll() {
+                this.expr = '';
+                this.display.value = '0';
+                this.lastResult = false;
+            }
+
+            backspace() {
+                this.expr = this.expr.slice(0, -1);
+                this.display.value = this.expr || '0';
+                this.lastResult = false;
+            }
+
+            toggleSign() {
+                if (this.lastResult) {
+                    let val = this.display.value;
+                    if (val && val !== 'ERROR') {
+                        val = val.startsWith('-') ? val.substring(1) : '-' + val;
+                        this.display.value = val;
+                        this.expr = val;
+                        this.lastResult = false;
+                    }
+                    return;
+                }
+                if (!this.expr) return;
+                this.expr = this.expr.startsWith('-')
+                    ? this.expr.substring(1)
+                    : '-' + this.expr;
+                this.display.value = this.expr;
+            }
+
+            reciprocal() {
+                try {
+                    const val = eval(this.expr);
+                    const result = 1.0 / val;
+                    if (!isFinite(result)) {
+                        this.display.value = 'ERROR';
+                        this.expr = '';
+                        this.lastResult = false;
+                        return;
+                    }
+                    this.expr = String(result);
+                    this.display.value = this.expr;
+                    this.lastResult = true;
+                } catch (_) {
+                    this.display.value = 'ERROR';
+                    this.expr = '';
+                    this.lastResult = false;
+                }
+            }
+
+            memClear()  { this.memory = 0.0; }
+
+            memRecall() {
+                this.display.value = String(this.memory);
+                this.expr = String(this.memory);
+                this.lastResult = true;
+            }
+
+            memAdd() {
+                try {
+                    const val = this.expr ? eval(this.expr) : 0.0;
+                    this.memory += Number(val);
+                } catch (_) { /* ignorar */ }
+            }
+
+            memSub() {
+                try {
+                    const val = this.expr ? eval(this.expr) : 0.0;
+                    this.memory -= Number(val);
+                } catch (_) { /* ignorar */ }
+            }
+
+            calculate() {
+                try {
+                    const result = eval(this.expr);
+                    if (result === undefined || !isFinite(result)) {
+                        this.display.value = 'ERROR';
+                        this.expr = '';
+                        this.lastResult = false;
+                        return;
+                    }
+                    this.display.value = String(result);
+                    this.expr = '';
+                    this.lastResult = true;
+                } catch (_) {
+                    this.display.value = 'ERROR';
+                    this.expr = '';
+                    this.lastResult = false;
+                }
+            }
+        }
+
+        const calculator = new Calculator();
+
+        /* ── Atajos de teclado ── */
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter')     calculator.calculate();
+            if (ev.key === 'Backspace') calculator.backspace();
+        });
+    </script>
+</body>
+</html>

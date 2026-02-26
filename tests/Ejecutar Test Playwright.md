@@ -1,0 +1,1 @@
+python -m pytest tests/test_calculadora_playwright.py -v
